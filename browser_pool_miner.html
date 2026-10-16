@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#101827">
+<title>Mineur navigateur — prototype</title>
+<style>
+:root{color-scheme:dark;--bg:#101827;--panel:#192438;--line:#30415c;--text:#eef4ff;--muted:#aab8cf;--accent:#7ee0b8;--warn:#ffcf75;--red:#ff9d9d}
+*{box-sizing:border-box}body{margin:0;background:linear-gradient(150deg,#101827,#111f32);font:16px system-ui,-apple-system,Segoe UI,sans-serif;color:var(--text);min-height:100vh;display:grid;place-items:center;padding:20px}
+main{width:min(760px,100%)}.eyebrow{color:var(--accent);font-weight:700;letter-spacing:.12em;text-transform:uppercase;font-size:.78rem}h1{font-size:clamp(2rem,6vw,3.1rem);margin:.4rem 0}p,li{line-height:1.55;color:var(--muted)}.panel{background:rgba(25,36,56,.96);border:1px solid var(--line);border-radius:18px;padding:22px;margin-top:18px}
+label{display:block;font-size:.9rem;font-weight:650;margin:14px 0 7px}input,select{width:100%;padding:12px;border:1px solid var(--line);border-radius:10px;background:#0d1726;color:var(--text);font:inherit}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}button{border:0;border-radius:10px;padding:12px 18px;font:inherit;font-weight:750;cursor:pointer}.primary{background:var(--accent);color:#092219}.secondary{background:#26364f;color:var(--text)}button:disabled{opacity:.45;cursor:not-allowed}
+.notice{border-left:3px solid var(--warn);padding:10px 12px;background:#302a20;border-radius:6px;color:#ffe6b4;font-size:.92rem}.status{font-weight:700;color:var(--warn);overflow-wrap:anywhere}.small{font-size:.85rem}.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.stat{background:#0d1726;border:1px solid var(--line);border-radius:12px;padding:14px}.stat span{display:block;color:var(--muted);font-size:.85rem}.stat strong{display:block;font-size:1.15rem;margin-top:4px;overflow-wrap:anywhere}a{color:#9fcaff}input[type=checkbox]{width:auto}footer{color:var(--muted);font-size:.8rem;margin:20px 2px}@media(max-width:560px){.row,.stats{grid-template-columns:1fr}.panel{padding:16px}}
+</style>
+</head>
+<body>
+<main>
+  <div class="eyebrow">Prototype • démarrage volontaire</div>
+  <h1>Mineur navigateur</h1>
+  <p>Cette page utilise un moteur de minage tiers chargé en ligne. Elle ne démarre qu'après ton clic. Le navigateur doit rester ouvert au premier plan pour de meilleurs résultats.</p>
+
+  <section class="panel">
+    <div class="notice"><strong>À lire avant de commencer :</strong> le moteur externe Earnify indique utiliser une pool Zpool avec conversion automatique et réserver un thread supplémentaire à son développeur comme frais de service. Je ne peux pas auditer ni garantir ce service, ses paiements ou sa disponibilité. Ne mets ici qu'une adresse publique de réception, jamais une clé privée ou une phrase de récupération.</div>
+
+    <label for="wallet">Adresse publique de réception</label>
+    <input id="wallet" autocomplete="off" spellcheck="false" placeholder="Adresse DOGE, LTC ou RVN prise en charge">
+    <div class="row">
+      <div>
+        <label for="cpu">Part des threads pour ton minage</label>
+        <select id="cpu">
+          <option value="0.1">10 % — faible</option>
+          <option value="0.25" selected>25 % — recommandé pour tester</option>
+          <option value="0.5">50 % — chauffe plus</option>
+        </select>
+      </div>
+      <div>
+        <label>Monnaies prises en charge</label>
+        <p class="small" style="margin-top:0">DOGE, LTC ou RVN : le moteur détermine la monnaie à partir du format de l'adresse.</p>
+      </div>
+    </div>
+
+    <label style="display:flex;align-items:flex-start;gap:10px;font-weight:500">
+      <input id="consent" type="checkbox">
+      <span>Je consens à utiliser les ressources CPU de cet appareil. Je comprends que cela consomme de la batterie, chauffe l'appareil et que les gains ne sont pas garantis.</span>
+    </label>
+
+    <div class="actions">
+      <button id="start" class="primary" type="button">Démarrer le minage</button>
+      <button id="stop" class="secondary" type="button" disabled>Arrêter</button>
+    </div>
+
+    <p id="status" class="status" role="status">État : arrêté.</p>
+    <div class="stats">
+      <div class="stat"><span>Hashrate</span><strong id="hashrate">—</strong></div>
+      <div class="stat"><span>Temps écoulé</span><strong id="uptime">—</strong></div>
+      <div class="stat"><span>Parts acceptées/rejetées</span><strong id="shares">Voir console si disponible</strong></div>
+    </div>
+    <p class="small">Le moteur de minage est chargé depuis <code>earnify.cc</code>; ce fichier HTML ne contient pas lui-même le code WASM de minage. Le fournisseur externe peut changer son service ou son API.</p>
+  </section>
+
+  <section class="panel">
+    <h2>Limites importantes</h2>
+    <ul>
+      <li>Une pool attribue des paiements selon ses seuils, ses frais et les parts acceptées. De petits appareils peuvent gagner très peu, voire ne jamais atteindre le seuil de paiement.</li>
+      <li>Le service externe documente un thread de développement supplémentaire, en plus de la part CPU choisie.</li>
+      <li>iPhone/Safari peut suspendre le calcul lorsque tu quittes l'onglet ou verrouilles l'écran. Cette page ne garantit pas un minage continu sur mobile.</li>
+      <li>GitHub Pages peut héberger cette page statique gratuitement. Le moteur, le relais et la pool restent des services tiers externes.</li>
+    </ul>
+    <p class="small">Références à examiner avant utilisation : <a href="https://github.com/romannnoodesl/earnify.cc" target="_blank" rel="noopener noreferrer">code et documentation du moteur</a> · <a href="https://earnify.cc/2.0/docs/" target="_blank" rel="noopener noreferrer">documentation API v2</a>.</p>
+  </section>
+  <footer>Prototype expérimental. Aucun paiement, rendement, sécurité du fournisseur ou disponibilité n'est garanti.</footer>
+</main>
+
+<script type="module">
+const $ = (id) => document.getElementById(id);
+let miner = null;
+let startedAt = 0;
+let uptimeTimer = null;
+
+function setStatus(text, color) {
+  $("status").textContent = text;
+  if (color) $("status").style.color = color;
+}
+function formatUptime() {
+  if (!startedAt) return "—";
+  const sec = Math.floor((Date.now() - startedAt) / 1000);
+  return `${Math.floor(sec / 3600)}h ${Math.floor((sec % 3600) / 60)}m ${sec % 60}s`;
+}
+function stopUptime() {
+  if (uptimeTimer) clearInterval(uptimeTimer);
+  uptimeTimer = null;
+}
+
+$("start").addEventListener("click", async () => {
+  if (miner) return;
+  const wallet = $("wallet").value.trim();
+  const cpu = Number($("cpu").value);
+  if (!wallet) { setStatus("Entre d'abord une adresse publique de réception.", "var(--red)"); return; }
+  if (!$("consent").checked) { setStatus("Coche la case de consentement avant de démarrer.", "var(--red)"); return; }
+  if (!/^https:$/.test(location.protocol) && location.hostname !== "localhost" && location.protocol !== "file:") {
+    setStatus("Pour une page hébergée, utilise HTTPS.", "var(--red)"); return;
+  }
+
+  $("start").disabled = true;
+  setStatus("Chargement du moteur tiers…", "var(--warn)");
+  try {
+    // Le moteur et son relais sont des services externes : vérifie le dépôt et les conditions avant usage.
+    const { autoMine } = await import("https://earnify.cc/2.0/newminer.js");
+    miner = autoMine(wallet, cpu, {
+      onHashrate: (h) => {
+        $("hashrate").textContent = h && h.hashrateKHs != null ? `${Number(h.hashrateKHs).toFixed(2)} KH/s` : "—";
+      },
+      onError: (e) => setStatus("Erreur du moteur : " + (e?.message || e?.error || String(e)), "var(--red)")
+    });
+    // v2 returns a handle; awaiting supports implementations that resolve asynchronously.
+    miner = await miner;
+    if (!miner || typeof miner.stop !== "function") {
+      throw new Error("Le moteur n'a pas retourné de commande d'arrêt compatible. Arrêt de sécurité.");
+    }
+    startedAt = Date.now();
+    $("uptime").textContent = "0h 0m 0s";
+    uptimeTimer = setInterval(() => $("uptime").textContent = formatUptime(), 1000);
+    $("stop").disabled = false;
+    $("consent").disabled = true;
+    $("wallet").disabled = true;
+    $("cpu").disabled = true;
+    setStatus("Minage lancé. Garde cet onglet ouvert; clique sur Arrêter pour terminer.", "var(--accent)");
+  } catch (err) {
+    miner = null;
+    $("start").disabled = false;
+    setStatus("Impossible de démarrer : " + (err?.message || String(err)), "var(--red)");
+    console.error(err);
+  }
+});
+
+$("stop").addEventListener("click", () => {
+  try {
+    if (miner && typeof miner.stop === "function") miner.stop();
+  } catch (err) {
+    console.error(err);
+  }
+  miner = null;
+  stopUptime();
+  $("start").disabled = false;
+  $("stop").disabled = true;
+  $("consent").disabled = false;
+  $("wallet").disabled = false;
+  $("cpu").disabled = false;
+  $("hashrate").textContent = "—";
+  $("uptime").textContent = "—";
+  setStatus("État : arrêté.", "var(--warn)");
+});
+</script>
+</body>
+</html>
